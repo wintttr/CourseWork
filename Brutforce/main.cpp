@@ -1,11 +1,13 @@
-#include"matrix.h"
 #include<vector>
 #include<iostream>
+#include<fstream>
 #include<numeric>
+#include<chrono>
 
+#include"matrix.h"
 using namespace std;
 
-// true => ���� �����������
+// true => ÷икл √амильтонов
 bool CheckPath(const vector<int>& path, const Matrix<int>& m) {
 	if (path.size() != (m.getn() + 1ull) || path[0] != path[m.getn()])
 		return false;
@@ -56,43 +58,58 @@ void DeepFirstSearch(const Matrix<int>& m, vector<int>& path, vector<int>& min_p
 vector<int> BrutForce(const Matrix<int>& m) {
 	vector<int> temp, result;
 	DeepFirstSearch(m, temp, result, 0);
-
 	return result;
 }
 
 
-int main() {
-	Matrix<int> m(5);
-	for (int i = 0; i < m.getn(); i++)
-		for (int j = 0; j < m.getm(); j++)
-			m.Set(i, j, 0);
+int main(int argc, char* argv[]) {
+	if (argc != 1 + 2) {
+		cerr << "1 аргумент - путь до файла с исходным графом." << endl;
+		cerr << "2 аргумент - путь до файла в который записывается информация о работе алгоритма." << endl;
+		cerr << "\tФормат записи: число_вершин время_работы_в_миллисекундах длина_найденного_маршрута" << endl;
 
-	m.Set(0, 2, 2);
-	m.Set(2, 0, 2);
-
-	m.Set(0, 1, 4);
-	m.Set(1, 0, 4);
-
-	m.Set(0, 4, 8);
-	m.Set(4, 0, 8);
-
-	m.Set(1, 2, 6);
-	m.Set(2, 1, 6);
-
-	m.Set(1, 3, 10);
-	m.Set(3, 1, 10);
-
-	m.Set(1, 4, 1);
-	m.Set(4, 1, 1);
-
-	m.Set(3, 4, 4);
-	m.Set(4, 3, 4);
-
-	vector<int> path = BrutForce(m);
-	for (auto i : path) {
-		cout << i << " ";
+		return -1;
 	}
-	cout << endl;
 
-	cout << PathWeight(path, m);
+	string in, out;
+	in = argv[1];
+	out = argv[2];
+
+	ifstream iFile(in);
+	iFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	int n = 0;
+	Matrix<int> m(0);
+
+	try {
+		iFile >> n;
+		Matrix<int> temp(n);
+		for (int i = 0; i < temp.getn(); i++)
+			for (int j = 0; j < temp.getm(); j++) {
+				int vertex;
+				iFile >> vertex;
+				temp.Set(i, j, vertex);
+			}
+		m = move(temp);
+	}
+	catch (ifstream::failure e) {
+		cerr << "Ошибка IO: " << e.what() << endl;
+		return -1;
+	}
+
+	iFile.close();
+
+	chrono::time_point<chrono::high_resolution_clock> b_time, e_time;
+
+	b_time = chrono::high_resolution_clock::now();
+	vector<int> path = BrutForce(m);
+	int result_weight = PathWeight(path, m);
+	e_time = chrono::high_resolution_clock::now();
+
+	ofstream oFile(out, ios_base::app);
+
+	oFile << n << " " << chrono::duration_cast<chrono::milliseconds>(e_time - b_time).count() << " " << result_weight << endl;
+
+	oFile.close();
+
+	return 0;
 }

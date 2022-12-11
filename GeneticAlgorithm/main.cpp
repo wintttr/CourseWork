@@ -210,8 +210,11 @@ int main(int argc, char* argv[]) {
 		iFile >> n;
 		Matrix<int> temp(n);
 		for (int i = 0; i < temp.getn(); i++)
-			for (int j = 0; j < temp.getm(); j++)
-				temp.Set(i, j, 0);
+			for (int j = 0; j < temp.getm(); j++){
+				int vertex;
+				iFile >> vertex;
+				temp.Set(i, j, vertex);
+			}
 		m = move(temp);
 	}
 	catch (ifstream::failure e) {
