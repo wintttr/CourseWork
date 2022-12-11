@@ -78,16 +78,16 @@ def random_weights(graph, a, b):
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)                
 
-def generate_data_set():
+def generate_data_set(pth):
     lst = list(range(5, 30))
     
     for v in lst:
         n = v
         m = 10
         default_path = str(v)
-        
+        os.makedirs(os.path.join(pth, default_path), exist_ok=True)
         for i in range(m):
-            with open(os.path.join(default_path, str(i) + ".txt"), 'w') as f:
+            with open(os.path.join(pth, default_path, str(i) + ".txt"), 'w') as f:
                 graph = random_gam_graph(n)
                 random_weights(graph, 1, 20)
                 f.write(str(graph.n) + "\n")
@@ -96,7 +96,10 @@ def generate_data_set():
                         f.write(str(graph[i, j]) + " ")
 
 def main():
-    generate_data_set()
+    if(len(sys.argv) != 1+1):
+        print("Введите путь, в который будут записаны сгенерированные графы")
+        exit()
+    generate_data_set(sys.argv[1])
 
 # def main():
     # if len(sys.argv) != 1 + 3 or (not sys.argv[1].isdigit()) or (not sys.argv[2].isdigit()):
