@@ -84,10 +84,10 @@ def generate_data_set(pth):
     for v in lst:
         n = v
         m = 10
-        default_path = str(v)
+        default_path = str(v).zfill(3)
         os.makedirs(os.path.join(pth, default_path), exist_ok=True)
         for i in range(m):
-            with open(os.path.join(pth, default_path, str(i) + ".txt"), 'w') as f:
+            with open(os.path.join(pth, default_path, str(i).zfill(3) + ".txt"), 'w') as f:
                 graph = random_gam_graph(n)
                 random_weights(graph, 1, 20)
                 f.write(str(graph.n) + "\n")
