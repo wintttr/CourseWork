@@ -3,11 +3,12 @@
 #include<fstream>
 #include<numeric>
 #include<chrono>
+#include<algorithm>
 
 #include"matrix.h"
 using namespace std;
 
-// true => ÷икл √амильтонов
+// true => Цикл Гамильтонов
 bool CheckPath(const vector<int>& path, const Matrix<int>& m) {
 	if (path.size() != (m.getn() + 1ull) || path[0] != path[m.getn()])
 		return false;

@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
 
 	ofstream oFile(out, ios_base::app);
 
-	oFile << chrono::duration_cast<chrono::milliseconds>(e_time - b_time).count() << n << result_weight << endl;
+	oFile << n << " " << chrono::duration_cast<chrono::milliseconds>(e_time - b_time).count() << " " << result_weight << endl;
 
 	oFile.close();
 	
