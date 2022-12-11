@@ -55,7 +55,7 @@ class GeneticEngine {
 
 		for (int i = 0; i < p.size(); i++) {
 			int l = matr(p[i], p[(i + 1) % p.size()]);
-			sum += (l == 0 ? max_path_ * 5 : l);
+			sum += (l == 0 ? max_path_ * 10 : l);
 		}
 
 		return sum;
