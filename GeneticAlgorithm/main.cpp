@@ -20,7 +20,17 @@ int PathWeight(const vector<int>& p, const Matrix<int>& matr) {
 struct Population {
 	vector<int> p;
 	int weight;
+
+	bool operator<(const Population& p) const {
+		return this->weight < p.weight;
+	}
+
+	bool operator==(const Population& p) const {
+		return this->weight == p.weight;
+	}
+
 	Population(const vector<int>& p, int w) : p(p), weight(w) {}
+	Population(vector<int>&& p, int w) : p(move(p)), weight(w) {}
 };
 
 class GeneticEngine {
@@ -31,7 +41,7 @@ class GeneticEngine {
 	const size_t mutation_percent_;
 	const size_t gen_count_;
 
-	vector<vector<int>> populations;
+	vector<Population> populations;
 
 	int PathWeight(const vector<int>& p) {
 		int sum = 0;
@@ -51,8 +61,8 @@ class GeneticEngine {
 		return true;
 	}
 
-	bool cmp(const vector<int>& p1, const vector<int>& p2) {
-		return PathWeight(p1) < PathWeight(p2);
+	bool cmp(const Population& p1, const Population& p2) {
+		return p1 < p2;
 	}
 
 	void CreateFirstPopulation() {
@@ -61,7 +71,7 @@ class GeneticEngine {
 			temp.push_back(i);
 
 		for(int i = 0; i < population_count_; i++){
-			populations.push_back(temp);
+			populations.emplace_back(temp, PathWeight(temp));
 			random_shuffle(temp.begin() + 1, temp.end());
 		}
 	}
@@ -73,22 +83,19 @@ class GeneticEngine {
 		vector<int> child;
 
 		for (int k = 0; k <= div; k++)
-			child.push_back(populations[i][k]);
+			child.push_back(populations[i].p[k]);
 
 		for (int k = div + 1; k < vertices_count_; k++)
-			if (find(child.begin(), child.end(), populations[j][k]) == child.end())
-				child.push_back(populations[j][k]);
+			if (find(child.begin(), child.end(), populations[j].p[k]) == child.end())
+				child.push_back(populations[j].p[k]);
 
-		if (child.size() < vertices_count_) {
-			vector<int> field(vertices_count_, 0);
-			for (auto u : child)
-				field[u] = 1;
-			for (int u = 0; u < field.size(); u++)
-				if (field[u] == 0)
-					child.push_back(u);
-		}
+		if (child.size() != vertices_count_)
+			for (int k = div + 1; k < vertices_count_; k++)
+				if (find(child.begin(), child.end(), populations[i].p[k]) == child.end())
+					child.push_back(populations[i].p[k]);
 
-		populations.push_back(child);
+		int w = PathWeight(child);
+		populations.emplace_back(move(child), w);
 	}
 
 	void Mutation(int i) {
@@ -98,7 +105,7 @@ class GeneticEngine {
 		if (x == y)
 			y = 1 + (y + 1) % (vertices_count_ - 1);
 
-		swap(populations[i][x], populations[i][y]);
+		swap(populations[i].p[x], populations[i].p[y]);
 	}
 
 	void Selection() {
@@ -133,8 +140,8 @@ public:
 		}
 
 		for (int i = 0; i < populations.size(); i++)
-			if (Check(populations[i])) {
-				return populations[i];
+			if (Check(populations[i].p)) {
+				return populations[i].p;
 			}
 
 		return {};
@@ -182,7 +189,7 @@ int main() {
 	m.Set(3, 4, 4);
 	m.Set(4, 3, 4);
 
-	GeneticEngine g(m, 10, 10, 100);
+	GeneticEngine g(m, 20, 10, 100);
 
 	vector<int> path = g.Run();
 	path.push_back(0);
