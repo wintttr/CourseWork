@@ -4,10 +4,17 @@
 #include<cassert>
 #include<set>
 #include<functional>
+#include<fstream>
+#include<string>
+#include<chrono>
+#include<random>
 
 #include"matrix.h"
 
 using namespace std;
+
+std::random_device rrrrandom;
+std::mt19937 RandGen(rrrrandom());
 
 int PathWeight(const vector<int>& p, const Matrix<int>& matr) {
 	int sum = 0;
@@ -72,7 +79,7 @@ class GeneticEngine {
 
 		for(int i = 0; i < population_count_; i++){
 			populations.emplace_back(temp, PathWeight(temp));
-			random_shuffle(temp.begin() + 1, temp.end());
+			shuffle(temp.begin() + 1, temp.end(), RandGen);
 		}
 	}
 
@@ -162,42 +169,74 @@ public:
 	}
 };
 
-int main() {
-	Matrix<int> m(5);
-	for (int i = 0; i < m.getn(); i++)
-		for (int j = 0; j < m.getm(); j++)
-			m.Set(i, j, 0);
+bool isnumber(const string_view sv) {
+	for (int i = 0; i < sv.size(); i++)
+		if (!isdigit(sv[i]))
+			return false;
+	return true;
+}
 
-	m.Set(0, 2, 2);
-	m.Set(2, 0, 2);
+int main(int argc, char* argv[]) {
+	if (argc != 1 + 5) {
+		cerr << "1 аргумент - путь до файла с исходным графом." << endl;
+		cerr << "2 аргумент - путь до файла в который записывается информация о работе алгоритма." << endl;
+		cerr << "\tФормат записи: число_вершин время_работы_в_миллисекундах длина_найденного_маршрута" << endl;
+		cerr << "3 аргумент - целое число, количество особей в популяции." << endl;
+		cerr << "4 аргумент - целое число, процент мутаций." << endl;
+		cerr << "5 аргумент - целое число, число популяций." << endl;
 
-	m.Set(0, 1, 4);
-	m.Set(1, 0, 4);
+		return -1;
+	}
 
-	m.Set(0, 4, 8);
-	m.Set(4, 0, 8);
+	if (!isnumber(argv[3]) || !isnumber(argv[4]) || !isnumber(argv[5])) {
+		cerr << "3, 4 и 5 аргументы - целые числа" << endl;
+		return -1;
+	}
 
-	m.Set(1, 2, 6);
-	m.Set(2, 1, 6);
+	int population_count = stoi(argv[3]);
+	int m_percent = stoi(argv[4]);
+	int generation_count = stoi(argv[5]);
 
-	m.Set(1, 3, 10);
-	m.Set(3, 1, 10);
+	string in, out;
+	in = argv[1];
+	out = argv[2];
 
-	m.Set(1, 4, 1);
-	m.Set(4, 1, 1);
+	ifstream iFile(in);
+	iFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	int n = 0;
+	Matrix<int> m(0);
 
-	m.Set(3, 4, 4);
-	m.Set(4, 3, 4);
+	try {
+		iFile >> n;
+		Matrix<int> temp(n);
+		for (int i = 0; i < temp.getn(); i++)
+			for (int j = 0; j < temp.getm(); j++)
+				temp.Set(i, j, 0);
+		m = move(temp);
+	}
+	catch (ifstream::failure e) {
+		cerr << "Ошибка IO: " << e.what();
+		return -1;
+	}
 
-	GeneticEngine g(m, 20, 10, 100);
+	iFile.close();
 
+
+	GeneticEngine g(m, population_count, m_percent, generation_count);
+
+	chrono::time_point<chrono::high_resolution_clock> b_time, e_time;
+
+	b_time = chrono::high_resolution_clock::now();
 	vector<int> path = g.Run();
 	path.push_back(0);
+	int result_weight = PathWeight(path, m);
+	e_time = chrono::high_resolution_clock::now();
 
-	for (auto i : path) {
-		cout << i << " ";
-	}
-	cout << endl;
+	ofstream oFile(out, ios_base::app);
 
-	cout << PathWeight(path, m);
+	oFile << chrono::duration_cast<chrono::milliseconds>(e_time - b_time).count() << n << result_weight << endl;
+
+	oFile.close();
+	
+	return 0;
 }

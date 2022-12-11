@@ -17,7 +17,10 @@ class matrix_instance {
 
 public:
 	matrix_instance(intex x, intex y) : n(x), m(y) {
-		ptr = new T[x * y];
+		if (x == 0 || y == 0)
+			ptr = nullptr;
+		else
+			ptr = new T[x * y];
 	}
 
 	matrix_instance(intex x, intex y, const T& alloc) : matrix_instance(x, y) {
@@ -33,7 +36,8 @@ public:
 	}
 
 	~matrix_instance() {
-		delete[] ptr;
+		if(ptr != nullptr)
+			delete[] ptr;
 	}
 
 	intex getn() const { return n; }
