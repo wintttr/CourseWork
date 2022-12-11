@@ -78,35 +78,55 @@ def random_weights(graph, a, b):
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)                
 
-def main():
-    if len(sys.argv) != 1 + 3 or (not sys.argv[1].isdigit()) or (not sys.argv[2].isdigit()):
-        eprint("Неверный список аргументов.")
-        eprint("\t1 аргумент - целое число n = количеству вершин")
-        eprint("\t2 аргумент - целое число m = число графов, подлежащих генерации")
-        eprint("\t3 аргумент - путь до каталога, в котором будут находиться сгенерированные графы")
-        exit()
+def generate_data_set():
+    lst = list(range(5, 30))
+    
+    for v in lst:
+        n = v
+        m = 10
+        default_path = str(v)
         
-    try:    
-        if not os.path.exists(sys.argv[3]):
-            os.makedirs(sys.argv[3], exist_ok=True)
-        elif os.path.isfile(sys.argv[3]):
-            eprint("3 аргументом должен быть передан путь до каталога, а не файл.")
-            exit()
-    except OSError:
-        eprint("Ошибка IO.")
-        exit()
+        for i in range(m):
+            with open(os.path.join(default_path, str(i) + ".txt"), 'w') as f:
+                graph = random_gam_graph(n)
+                random_weights(graph, 1, 20)
+                f.write(str(graph.n) + "\n")
+                for i in range(graph.n):
+                    for j in range(graph.n):
+                        f.write(str(graph[i, j]) + " ")
+
+def main():
+    generate_data_set()
+
+# def main():
+    # if len(sys.argv) != 1 + 3 or (not sys.argv[1].isdigit()) or (not sys.argv[2].isdigit()):
+        # eprint("Неверный список аргументов.")
+        # eprint("\t1 аргумент - целое число n = количеству вершин")
+        # eprint("\t2 аргумент - целое число m = число графов, подлежащих генерации")
+        # eprint("\t3 аргумент - путь до каталога, в котором будут находиться сгенерированные графы")
+        # exit()
+        
+    # try:    
+        # if not os.path.exists(sys.argv[3]):
+            # os.makedirs(sys.argv[3], exist_ok=True)
+        # elif os.path.isfile(sys.argv[3]):
+            # eprint("3 аргументом должен быть передан путь до каталога, а не файл.")
+            # exit()
+    # except OSError:
+        # eprint("Ошибка IO.")
+        # exit()
     
-    n = int(sys.argv[1])
-    m = int(sys.argv[2])
-    default_path = sys.argv[3]
+    # n = int(sys.argv[1])
+    # m = int(sys.argv[2])
+    # default_path = sys.argv[3]
     
-    for i in range(m):
-        with open(os.path.join(default_path, str(i) + ".txt"), 'w') as f:
-            graph = random_gam_graph(n)
-            random_weights(graph, 1, 20)
-            f.write(str(graph.n) + "\n")
-            for i in range(graph.n):
-                for j in range(graph.n):
-                    f.write(str(graph[i, j]) + " ")
+    # for i in range(m):
+        # with open(os.path.join(default_path, str(i) + ".txt"), 'w') as f:
+            # graph = random_gam_graph(n)
+            # random_weights(graph, 1, 20)
+            # f.write(str(graph.n) + "\n")
+            # for i in range(graph.n):
+                # for j in range(graph.n):
+                    # f.write(str(graph[i, j]) + " ")
             
 main()
